@@ -12,11 +12,11 @@ It offers full pixel and binary compatibility with the Web version running on Ty
 ・**Specify Image Size**: Exactly what it sounds like.
 
 
-### 操作手順
+# Operating Procedures
 1. Download the latest `BinaryImageConverter.zip` from the releases page.
 2. Extract the zip file and run `BinaryImageConverter.exe`.
 
-**System Requirements**: Windows 10 / 11 (.NET 10.0 runtime)
+#System Requirements: Windows 10 / 11 (.NET 10.0 runtime)
 
 
 
@@ -46,7 +46,7 @@ TypeScript/Canvasで動作するWeb版との完全なピクセル・バイナリ
 ・**デコード**  :変換したバイナリ画像を元のファイルに復元します
 ・**画像サイズの指定**:これは文字通りですね
 
-### 操作手順
+# 操作手順
 1. releasesページから最新の `BinaryImageConverter.zip` をダウンロードします。
 2. ジップファイルを解凍し、中にある `BinaryImageConverter.exe` を実行します。
 
