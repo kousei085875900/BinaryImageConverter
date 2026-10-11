@@ -18,13 +18,13 @@ It offers full pixel and binary compatibility with the Web version running on Ty
 
 
 
-#
+# 　
 
 
 
 
 
-#日本語
+# 日本語
 任意のファイルを16~1677万色で構成されたバイナリ画像に変換して分割・保存しそこから、元ファイルを正確にでコードできるc#製のwindowsアプリケーションです。
 
 TypeScript/Canvasで動作するWeb版との完全なピクセル・バイナリ互換性を備えています。
