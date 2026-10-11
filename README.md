@@ -41,7 +41,7 @@ TypeScript/Canvasで動作するWeb版との完全なピクセル・バイナリ
 ・**画像サイズの指定**:これは文字通りですね
 
 # 操作手順
-1. releasesページから最新の `BinaryImageConverter.zip` をダウンロードします。
+1. releasesページから最新の `BinaryImageConverter` をダウンロードします。
 2. ジップファイルを解凍し、中にある `BinaryImageConverter.exe` を実行します。
 
 # 動作環境
