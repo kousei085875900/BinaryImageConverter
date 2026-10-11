@@ -16,7 +16,7 @@ It offers full pixel and binary compatibility with the Web version running on Ty
 1. Download the latest `BinaryImageConverter.zip` from the releases page.
 2. Extract the zip file and run `BinaryImageConverter.exe`.
 
-#　System Requirements: 
+# System Requirements: 
 Windows 10 / 11 (.NET 10.0 runtime)
 
 
