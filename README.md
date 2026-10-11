@@ -11,6 +11,7 @@ It offers full pixel and binary compatibility with the Web version running on Ty
 ・**Decode**: Restores the converted binary images to the original file.
 ・**Specify Image Size**: Exactly what it sounds like.
 
+
 ### 操作手順
 1. Download the latest `BinaryImageConverter.zip` from the releases page.
 2. Extract the zip file and run `BinaryImageConverter.exe`.
@@ -45,6 +46,7 @@ TypeScript/Canvasで動作するWeb版との完全なピクセル・バイナリ
 ・**デコード**  :変換したバイナリ画像を元のファイルに復元します
 ・**画像サイズの指定**:これは文字通りですね
 
+### 操作手順
 1. releasesページから最新の `BinaryImageConverter.zip` をダウンロードします。
 2. ジップファイルを解凍し、中にある `BinaryImageConverter.exe` を実行します。
 
