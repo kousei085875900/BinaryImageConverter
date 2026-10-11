@@ -47,4 +47,5 @@ TypeScript/Canvasで動作するWeb版との完全なピクセル・バイナリ
 1. releasesページから最新の `BinaryImageConverter.zip` をダウンロードします。
 2. ジップファイルを解凍し、中にある `BinaryImageConverter.exe` を実行します。
 
-**動作環境**: Windows 10 / 11 (.NET 10.0 runtime)
+# 動作環境
+: Windows 10 / 11 (.NET 10.0 runtime)
