@@ -11,6 +11,7 @@ It offers full pixel and binary compatibility with the Web version running on Ty
 ・**Decode**: Restores the converted binary images to the original file.
 ・**Specify Image Size**: Exactly what it sounds like.
 
+### 操作手順
 1. Download the latest `BinaryImageConverter.zip` from the releases page.
 2. Extract the zip file and run `BinaryImageConverter.exe`.
 
