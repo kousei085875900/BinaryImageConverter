@@ -1,10 +1,9 @@
 using System;
+using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace BinaryImageConverter
 {
@@ -47,20 +46,7 @@ namespace BinaryImageConverter
             }
         }
 
-        // --- エンコード保存先フォルダの選択用ダイアログ ---
-        private void BtnBrowseEncodeOutputDir_Click(object sender, EventArgs e)
-        {
-            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
-            {
-                if (fbd.ShowDialog() == DialogResult.OK)
-                {
-                    // もし txtEncodeOutputDir があればそこに代入。なければ適宜コントロール名に合わせてね
-                    // txtEncodeOutputDir.Text = fbd.SelectedPath;
-                }
-            }
-        }
-
-        // --- エンコード処理 (保存先指定対応) ---
+        // --- エンコード処理 ---
         private void BtnEncode_Click(object sender, EventArgs e)
         {
             string filePath = txtEncodeFile.Text;
@@ -76,6 +62,16 @@ namespace BinaryImageConverter
             string colorMode = "1677";
             if (rb16.Checked) colorMode = "16";
             else if (rb256.Checked) colorMode = "256";
+
+            string baseDir = Path.GetDirectoryName(filePath);
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "生成する連番画像の保存先フォルダを選択してください";
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    baseDir = fbd.SelectedPath;
+                }
+            }
 
             try
             {
@@ -111,16 +107,8 @@ namespace BinaryImageConverter
                 Array.Copy(fileBytes, 0, fullData, headerSize, fileBytes.Length);
 
                 int pixelsPerFrame = width * height;
-                int bytesPerFrame = 0;
-                if (colorMode == "16") bytesPerFrame = pixelsPerFrame / 2;
-                else if (colorMode == "256") bytesPerFrame = pixelsPerFrame;
-                else bytesPerFrame = pixelsPerFrame * 3;
-
+                int bytesPerFrame = pixelsPerFrame * 3;
                 int totalFrames = (int)Math.Ceiling((double)fullData.Length / bytesPerFrame);
-
-                // 保存先フォルダの決定（ユーザーが指定していればそこ、していなければ元ファイルと同じ場所）
-                string baseDir = Path.GetDirectoryName(filePath);
-                // if (!string.IsNullOrEmpty(txtEncodeOutputDir?.Text)) baseDir = txtEncodeOutputDir.Text;
 
                 string outFolderName = Path.Combine(baseDir, Path.GetFileNameWithoutExtension(filePath) + "_" + colorMode + "col_frames");
                 Directory.CreateDirectory(outFolderName);
@@ -142,43 +130,22 @@ namespace BinaryImageConverter
                         byte[] pixelValues = new byte[bytesCount];
 
                         int pIdx = 0;
-                        if (colorMode == "1677")
+                        for (int i = 0; i < frameChunk.Length; i += 3)
                         {
-                            for (int i = 0; i < frameChunk.Length; i += 3)
-                            {
-                                if (pIdx >= pixelsPerFrame) continue;
-                                byte r = frameChunk[i];
-                                byte g = i + 1 < frameChunk.Length ? frameChunk[i + 1] : (byte)0;
-                                byte b = i + 2 < frameChunk.Length ? frameChunk[i + 2] : (byte)0;
+                            if (pIdx >= pixelsPerFrame) continue;
+                            byte r = frameChunk[i];
+                            byte g = i + 1 < frameChunk.Length ? frameChunk[i + 1] : (byte)0;
+                            byte b = i + 2 < frameChunk.Length ? frameChunk[i + 2] : (byte)0;
 
-                                int x = pIdx % width;
-                                int y = pIdx / width;
-                                int index = y * stride + x * 4;
+                            int x = pIdx % width;
+                            int y = pIdx / width;
+                            int index = y * stride + x * 4;
 
-                                pixelValues[index] = r;
-                                pixelValues[index + 1] = g;
-                                pixelValues[index + 2] = b;
-                                pixelValues[index + 3] = 255;
-                                pIdx++;
-                            }
-                        }
-                        else if (colorMode == "256")
-                        {
-                            for (int i = 0; i < frameChunk.Length; i++)
-                            {
-                                if (pIdx >= pixelsPerFrame) continue;
-                                byte val = frameChunk[i];
-
-                                int x = pIdx % width;
-                                int y = pIdx / width;
-                                int index = y * stride + x * 4;
-
-                                pixelValues[index] = val;
-                                pixelValues[index + 1] = val;
-                                pixelValues[index + 2] = val;
-                                pixelValues[index + 3] = 255;
-                                pIdx++;
-                            }
+                            pixelValues[index] = b;
+                            pixelValues[index + 1] = g;
+                            pixelValues[index + 2] = r;
+                            pixelValues[index + 3] = 255;
+                            pIdx++;
                         }
 
                         for (int p = pIdx; p < pixelsPerFrame; p++)
@@ -212,7 +179,7 @@ namespace BinaryImageConverter
             }
         }
 
-        // --- デコード処理 (保存先をダイアログで選べるように拡張) ---
+        // --- デコード処理 (完全安定版) ---
         private void BtnDecode_Click(object sender, EventArgs e)
         {
             string pathsText = txtDecodeFile.Text;
@@ -225,7 +192,6 @@ namespace BinaryImageConverter
             string[] filePaths = pathsText.Split(';');
             Array.Sort(filePaths);
 
-            // デコード結果の保存先をユーザーに選ばせるダイアログを挟む
             string outputDirectory = Path.GetDirectoryName(filePaths[0]);
             using (FolderBrowserDialog fbd = new FolderBrowserDialog())
             {
@@ -275,9 +241,13 @@ namespace BinaryImageConverter
                                     for (int x = 0; x < width; x++)
                                     {
                                         int index = y * stride + x * 4;
-                                        fullDataStream.WriteByte(pixelValues[index]);     // R
-                                        fullDataStream.WriteByte(pixelValues[index + 1]); // G
-                                        fullDataStream.WriteByte(pixelValues[index + 2]); // B
+                                        byte b = pixelValues[index];
+                                        byte g = pixelValues[index + 1];
+                                        byte r = pixelValues[index + 2];
+
+                                        fullDataStream.WriteByte(r);
+                                        fullDataStream.WriteByte(g);
+                                        fullDataStream.WriteByte(b);
                                     }
                                 }
                             }
@@ -287,15 +257,20 @@ namespace BinaryImageConverter
 
                     byte[] allBytes = fullDataStream.ToArray();
 
-                    if (allBytes.Length > 7 && allBytes[0] == 0x42 && allBytes[1] == 0x49)
+                    // ヘッダー解析 ('BI' = 0x42, 0x49)
+                    int headerIndex = 0; // 先頭にあるはずなので0固定でOK
+                    if (allBytes.Length > 2 && allBytes[0] == 0x42 && allBytes[1] == 0x49)
                     {
+                        // modeCode = allBytes[2] (24)
+
+                        // ファイル名長の取得 (オフセット3から4バイト、Big-Endian)
                         byte[] lenBytes = new byte[4];
                         Array.Copy(allBytes, 3, lenBytes, 0, 4);
                         if (BitConverter.IsLittleEndian) Array.Reverse(lenBytes);
                         int nameLen = BitConverter.ToInt32(lenBytes, 0);
 
                         int nameStartIndex = 7;
-                        if (allBytes.Length >= nameStartIndex + nameLen + 8)
+                        if (nameLen > 0 && nameLen < 256 && allBytes.Length >= nameStartIndex + nameLen + 8)
                         {
                             string originalFileName = System.Text.Encoding.UTF8.GetString(allBytes, nameStartIndex, nameLen);
 
@@ -306,10 +281,10 @@ namespace BinaryImageConverter
                             long originalSize = (long)BitConverter.ToDouble(sizeBytes, 0);
 
                             int headerSize = sizeIndex + 8;
-                            if (originalSize > 0 && originalSize < 500 * 1024 * 1024 && allBytes.Length >= headerSize + originalSize)
+                            if (originalSize > 0 && allBytes.Length >= headerSize + originalSize)
                             {
-                                byte[] originalData = new byte[originalSize];
-                                Array.Copy(allBytes, headerSize, originalData, 0, originalSize);
+                                byte[] originalData = new byte[(int)originalSize];
+                                Array.Copy(allBytes, headerSize, originalData, 0, (int)originalSize);
 
                                 string outPath = Path.Combine(outputDirectory, "recovered_" + originalFileName);
                                 File.WriteAllBytes(outPath, originalData);
@@ -321,7 +296,7 @@ namespace BinaryImageConverter
                         }
                     }
 
-                    MessageBox.Show("有効なバイナリ画像データが見つかりませんでした。");
+                    MessageBox.Show("有効なバイナリ画像データが見つかりませんでした。（ヘッダーの解析に失敗しました）");
                 }
             }
             catch (Exception ex)
